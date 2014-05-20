@@ -18,13 +18,13 @@ import matplotlib.pyplot as plt
 # declare the variables
 
 # declare the directory of DL_POLY HISTORY file
-filedirectory="/Users/Shi/Dropbox/guangshi/simulation/mW_water/NVT/HISTORY"
+filedirectory="/Users/Shi/Dropbox/guangshi/simulation/GaussianTruncated/NVT/HISTORY"
 #filedirectory="/Volumes/Data/guangshi/simulation/mW_water/NVT/HISTORY"
 
-natmm = 1            # declare the number of atoms in one molecule
+natm_molecule = 3    # declare the number of atoms in one molecule
 ni = 0               # indicates the number of line where each configuration starts
-count = 0            # useded for loop in many configurations
-countMax = 1000      # the number of configurations considered
+count = 1            # useded for loop in many configurations
+countMax = 100      # the number of configurations considered
 nHist = 500          # number of bins
 rHistMax = 10.       # upper limit for considered interatomic distance. 
                      # This must be less than half of size of the simulation box(periodic condition) 
@@ -36,6 +36,8 @@ RDFhist = np.array(list(0.0 for i in range(nHist)))                # declare the
 
 RDF = {}                                                # declare a dictionary whose keys are different pairs of atoms and
                                                         # values are the corresponding RDF histogram: RDFhist defined above
+
+atmnam_natm_list = {}                                   # declare a dictionary whose keys are atom names and values are the number of atoms in one molecule
 
 #finish declaring the variables
 ###############################
@@ -57,7 +59,7 @@ def calvolume(imcon,x,y,z):
 
 
 # Calculate the volume of simulation box
-# open the file---> read line by line---> at second line, record the key variable "keytry" and "imcon"
+# open the file---> read line by line---> at second line, record the key variable "keytrj" and "imcon"
 # read the simulation box size. store it to a vector: boxvector
 with open(filedirectory,'r') as f:
     boxvector = []
@@ -71,10 +73,15 @@ with open(filedirectory,'r') as f:
             elif imcon == 6:
                 print "ERROR: Slab boundary condition is applied. Program is terminated"
                 sys.exit()
-            #natms = int(line.split()[2])       # number of atoms in the SIMULATION BOX
+            natms = int(line.split()[2])       # number of atoms in the SIMULATION BOX
         elif i == 3 or i == 4 or i == 5:
             boxvector.append([float(line.split()[0]), float(line.split()[1]), float(line.split()[2])])
-        elif i == 6:
+        elif i >= 6 and (i-6) % (keytrj+2) == 0 and i <= 5 + natm_molecule*(keytrj+2):
+                if line.split()[0] not in atmnam_natm_list:
+                    atmnam_natm_list[line.split()[0]] = 1
+                else:
+                    atmnam_natm_list[line.split()[0]] += 1
+        elif i >= 6 and i > 5 + natm_molecule*(keytrj+2):
             v = calvolume(imcon,boxvector[0],boxvector[1],boxvector[2])
             if v[1] == 1:
                 V = v[0]
@@ -90,13 +97,13 @@ LZ = sqrt(boxvector[2][0]**2+boxvector[2][1]**2+boxvector[2][2]**2)
 
 dim_array = np.array([LX,LY,LZ])
 
+
 ################################################################
 # main part of the code. calculate the RDF distribution function
 with open(filedirectory,"r") as f:
     for i, line in enumerate(f):
         if count <= countMax:
             if line.split()[0] == "timestep":
-                crstep = int(line.split()[1])
                 natomsc = int(line.split()[2])    # number of atoms in the CONFIGURATION
                 ni = i
                 count += 1
@@ -111,12 +118,16 @@ with open(filedirectory,"r") as f:
                 charge = line.split()[3]
                 if atmnam not in position:
                     position[atmnam] = []
-            elif ni > 0 and i>=ni+4 and (i-ni-4) % (keytrj+2) == 1 and i < ni + 3 + natomsc*(keytrj+2):    # read the coordinate line
+            elif ni > 0 and i >= ni + 4 and (i-ni-4) % (keytrj+2) == 1 and i < ni + 3 + natomsc*(keytrj+2):    # read the coordinate line
                 position[atmnam].append(float(line.split()[0]))
                 position[atmnam].append(float(line.split()[1]))
                 position[atmnam].append(float(line.split()[2]))
-            elif ni > 0 and i == ni + 3 + natomsc*(keytrj+2):                                              # reach the end of one trajectory timestep
-                atmnam_list = list(iter(position))
+            elif ni > 0 and i == ni + 3 + natomsc*(keytrj+2):                                                  # reach the end of one trajectory timestep
+                if (i-ni-4) % (keytrj+2) == 1:
+                    position[atmnam].append(float(line.split()[0]))
+                    position[atmnam].append(float(line.split()[1]))
+                    position[atmnam].append(float(line.split()[2]))
+                atmnam_list = list(iter(atmnam_natm_list))
                 for p in range(len(atmnam_list)):
                     for q in range(p,len(atmnam_list)):
                         if atmnam_list[p]+"-"+atmnam_list[q] not in RDF:
@@ -124,20 +135,27 @@ with open(filedirectory,"r") as f:
                         if atmnam_list[p] == atmnam_list[q]:
                             temp_name = atmnam_list[p]
                             position[temp_name] = np.array(position[temp_name])
-                            RDF[temp_name + "-" + temp_name] = RDF[temp_name + "-" + temp_name] + rdf.rdfone(position[temp_name],dim_array,nHist,rHistMax,V)
+                            natmm = atmnam_natm_list[temp_name]      # natmm is the number of atoms in one molecule.
+                            RDF[temp_name + "-" + temp_name] = RDF[temp_name + "-" + temp_name] + rdf.rdfone(position[temp_name],dim_array,natmm,nHist,rHistMax,V)
                         elif atmnam_list[p] != atmnam_list[q]:
                             temp_name1 = atmnam_list[p]
                             temp_name2 = atmnam_list[q]
+                            natmm1 = atmnam_natm_list[temp_name1]   # natmm1 and natmm2 are the number of two types of atoms in one molecule
+                            natmm2 = atmnam_natm_list[temp_name2]
                             position[temp_name1] = np.array(position[temp_name1])
                             position[temp_name2] = np.array(position[temp_name2])
-                            RDF[temp_name + "-" + temp_name] = RDF[temp_name + "-" + temp_name] + rdf.rdftwo(position[temp_name1],position[temp_name2],dim_array,nHist,rHistMax,V)
+                            RDF[temp_name1 + "-" + temp_name2] = RDF[temp_name1 + "-" + temp_name2] + rdf.rdftwo(position[temp_name1],position[temp_name2],dim_array,natmm1,natmm2,nHist,rHistMax,V)
         else:
             break
-for pair in iter(RDF):
-    for i in range(len(RDF[pair])):
-        RDF[pair][i] = RDF[pair][i]/(count-1)
-    plt.plot(bin,RDF[pair])
-    plt.savefig('RDF'+'_'+pair+'.png')
+
+with open('RDF.dat','w') as f:
+    for pair in iter(RDF):
+        RDF[pair] = RDF[pair]/countMax
+        f.write(pair + '\n')
+        for r, g in zip(bin,RDF[pair]):
+            f.write(str(r).ljust(10) + str(round(g,5)).ljust(10) + '\n')
+        f.write('\n')
+
 
 
 
