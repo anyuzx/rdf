@@ -3,18 +3,18 @@
 /* 
 c_rdf.cpp
 
-c++ function that calculate the radial distribution function in a periodic conditon
+c++ function that calculate the radial distribution function in a periodic conditon for isotropic system.
 c_rdf_one: calculate the RDF of the same type of atoms
 c_rdf_two: calculate the RDF of two types of atoms 
 
-input coordinates array need to be flatten which means that [[x1,y1,z1],[x2,y2,z2]] should be [x1,y1,z1,x2,y2,z2]
+input coordinates array need to be flatten. Example: [[x1,y1,z1],[x2,y2,z2]] should be [x1,y1,z1,x2,y2,z2]
 
 Arguments:
 r_array: flatten array of coordinates of all atoms need to be calculated
-rdf_array: Radial Distribution Function
-dim_array: dimension array. Ex. dim_array for a cubic box whose side length is 1.0 would be [1.0,1.0,1.0]
+rdf_array: Radial Distribution Function histogram array
+dim_array: dimension array. Example: dim_array for a cubic box whose side length is 1.0 would be [1.0,1.0,1.0]
 n: number of the molecules. 
-natmm,natmm1,natmm2: number of the atoms in one molecule.
+natmm,natmm1,natmm2: number of the one type of atom in one molecule.
 nHist: number of bins of RDF
 rHistMax: upper limit of the radius range of RDF
 v: volume of simulation box
@@ -25,12 +25,15 @@ void c_rdfone(double* r_array, double* rdf_array, double* dim_array, int n, int 
 	int i, j, k, l, ihist;
 	double dx, dy, dz, r;
 	double binsize = rHistMax/nHist;
-	double fact = v/(2 * 3.1415927 * n * (n-1) * natmm * natmm * binsize);
+	double fact = v/(2 * 3.1415927 * n * (n-1) * natmm * natmm * binsize);     // normalized factor. Only valid for isotropic system.
 
 	for(i=0;i<nHist;i++){
 		rdf_array[i] = 0;
 	}
 
+/*
+this loop part is to calculate the distances between all atom pairs excluding the pairs in the same molecules.
+*/
 	for(i=0;i<n-1;i++){
 		for(j=i+1;j<n;j++){
 			for(k=0;k<natmm;k++){
