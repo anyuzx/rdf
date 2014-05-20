@@ -24,7 +24,7 @@ filedirectory="/Users/Shi/Dropbox/guangshi/simulation/GaussianTruncated/NVT/HIST
 natm_molecule = 3    # declare the number of atoms in one molecule
 ni = 0               # indicates the number of line where each configuration starts
 count = 1            # useded for loop in many configurations
-countMax = 100      # the number of configurations considered
+countMax = 1000      # the number of configurations considered
 nHist = 500          # number of bins
 rHistMax = 10.       # upper limit for considered interatomic distance. 
                      # This must be less than half of size of the simulation box(periodic condition) 
@@ -151,7 +151,7 @@ with open(filedirectory,"r") as f:
 with open('RDF.dat','w') as f:
     for pair in iter(RDF):
         RDF[pair] = RDF[pair]/countMax
-        f.write(pair + '\n')
+        f.write('pair:' + pair + '\n')
         for r, g in zip(bin,RDF[pair]):
             f.write(str(r).ljust(10) + str(round(g,5)).ljust(10) + '\n')
         f.write('\n')
