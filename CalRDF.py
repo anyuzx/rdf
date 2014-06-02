@@ -18,19 +18,19 @@ import matplotlib.pyplot as plt
 # declare the variables
 
 # declare the directory of DL_POLY HISTORY file
-filedirectory="/Users/Shi/Dropbox/guangshi/simulation/GaussianTruncated/NVT/HISTORY"
+filedirectory="/Users/Shi/Dropbox/guangshi/simulation/TIP5P/NPT/HISTORY"
 #filedirectory="/Volumes/Data/guangshi/simulation/mW_water/NVT/HISTORY"
 
-natm_molecule = 3    # declare the number of atoms in one molecule
+natm_molecule = 5    # declare the number of atoms in one molecule
 ni = 0               # indicates the number of line where each configuration starts
-count = 1            # useded for loop in many configurations
+count = 1            # for loop in many configurations
 countMax = 1000      # the number of configurations considered
 nHist = 500          # number of bins
 rHistMax = 10.       # upper limit for considered interatomic distance. 
                      # This must be less than half of size of the simulation box(periodic condition) 
 
 binsize = rHistMax/nHist                                           # calculate the width of bin
-bin = np.array(list((i+1)*binsize/2.0 for i in range(nHist)))      # declare the bin list
+bin = np.array(list((i+0.5)*binsize for i in range(nHist)))      # declare the bin list
 
 RDFhist = np.array(list(0.0 for i in range(nHist)))                # declare the Radial Distribution Function histogram list
 
