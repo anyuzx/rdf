@@ -2,15 +2,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 rdf = {}
-
+check = False
 with open('RDF.dat','r') as f:
 	for i,line in enumerate(f):
 		if line.split(':')[0] == 'pair':
-			pair = line.split(':')[1]
+			pair = line.split('\n')[0].split(':')[1]
 			rdf[pair] = []
+			check = True
 		else:
-			if not line.strip():
-				continue
+			if check == False or not line.strip():
+				continue 
 			rdf[pair].append([float(line.split()[0]),float(line.split()[1])])
 
 for pair in iter(rdf):
