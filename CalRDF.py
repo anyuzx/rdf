@@ -23,12 +23,19 @@ import os.path
 # correct an error in the previous version. The volume in NPT ensemble is not constant. Need to read the volume at every configuration
 
 ################################
+
+if len(sys.argv) != 3:
+    print 'Please check the arguments passed to the script.'
+    sys.exit()
+else:
+    pass
+
 # declare the variables
 
-# declare the directory of DL_POLY HISTORY file
+# declare the directory of DL_POLY HISTORY file and dump directory of RDF.dat
 
-#filedirectory="/Users/Shi/Dropbox/guangshi/simulation/symmetry/NPT_ewald/trial3/"
-filedirectory="/Volumes/Data/guangshi/simulation/symmetry//NPT_ewald/trial4/"
+filedirectory = sys.argv[1]
+filedirectory_to = sys.argv[2]
 
 trajfilenam = 'HISTORY'
 inffilenam = 'README'
@@ -71,7 +78,7 @@ def calvolume(imcon,x,y,z):
         return 0,0
 
 ###############################
-# read the CONTROL file Header
+# read the README file Header
 
 if os.path.isfile(filedirectory+inffilenam):
     with open(filedirectory + inffilenam,'r') as f:
@@ -177,7 +184,7 @@ with open(filedirectory + trajfilenam,'r') as f:
         else:
             break
 
-with open('RDF.dat','w') as f:
+with open(filedirectory_to,'w') as f:
     f.write(contr_header)
     f.write(strftime("%Y-%m-%d %H:%H:%S")+'\n')
     for pair in iter(RDF):
