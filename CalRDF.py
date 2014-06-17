@@ -107,10 +107,10 @@ with open(filedirectory + trajfilenam,'r') as f:
         elif i == 3 or i == 4 or i == 5:
             boxvector.append([float(line.split()[0]), float(line.split()[1]), float(line.split()[2])])
         elif i >= 6 and (i-6) % (keytrj+2) == 0 and i <= 5 + natm_molecule*(keytrj+2):
-                if line.split()[0] not in atmnam_natm_list:
-                    atmnam_natm_list[line.split()[0]] = 1
-                else:
-                    atmnam_natm_list[line.split()[0]] += 1
+            if line.split()[0] not in atmnam_natm_list:
+                atmnam_natm_list[line.split()[0]] = 1
+            else:
+                atmnam_natm_list[line.split()[0]] += 1
         elif i >= 6 and i > 5 + natm_molecule*(keytrj+2):
             v = calvolume(imcon,boxvector[0],boxvector[1],boxvector[2])
             if v[1] == 1:
@@ -167,7 +167,7 @@ with open(filedirectory + trajfilenam,'r') as f:
                 for p in range(len(atmnam_list)):
                     for q in range(p,len(atmnam_list)):
                         if atmnam_list[p]+"-"+atmnam_list[q] not in RDF:
-                            RDF[atmnam_list[p]+"-"+atmnam_list[q]]=RDFhist
+                            RDF[atmnam_list[p]+"-"+atmnam_list[q]]=np.copy(RDFhist)
                         if atmnam_list[p] == atmnam_list[q]:
                             temp_name = atmnam_list[p]
                             position[temp_name] = np.array(position[temp_name])
