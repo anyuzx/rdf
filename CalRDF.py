@@ -2,7 +2,6 @@ import sys
 from math import *
 import rdf
 import numpy as np
-import matplotlib.pyplot as plt
 from time import strftime
 import os.path
 
@@ -41,7 +40,7 @@ trajfilenam = 'HISTORY'
 inffilenam = 'README'
 
 
-natm_molecule = 5    # declare the number of atoms in one molecule
+natm_molecule = 3   # declare the number of atoms in one molecule
 ni = 0               # indicates the number of line where each configuration starts
 count = 1            # for loop in many configurations
 countMax = 1000      # the number of configurations considered
@@ -121,6 +120,7 @@ with open(filedirectory + trajfilenam,'r') as f:
                 sys.exit()
 
 boxvector = []
+atmnam_natm_list = {'OW':1,'HW':2,'OG':1,'HG':2}
 ################################################################
 # main part of the code. calculate the RDF distribution function
 with open(filedirectory + trajfilenam,'r') as f:
@@ -163,7 +163,7 @@ with open(filedirectory + trajfilenam,'r') as f:
                     position[atmnam].append(float(line.split()[0]))
                     position[atmnam].append(float(line.split()[1]))
                     position[atmnam].append(float(line.split()[2]))
-                atmnam_list = list(iter(atmnam_natm_list))
+                atmnam_list = list(iter(position.keys()))
                 for p in range(len(atmnam_list)):
                     for q in range(p,len(atmnam_list)):
                         if atmnam_list[p]+"-"+atmnam_list[q] not in RDF:
