@@ -40,7 +40,7 @@ trajfilenam = 'HISTORY'
 inffilenam = 'README'
 
 
-natm_molecule = 3   # declare the number of atoms in one molecule
+natm_molecule = 3    # declare the number of atoms in one molecule
 ni = 0               # indicates the number of line where each configuration starts
 count = 1            # for loop in many configurations
 countMax = 1000      # the number of configurations considered
@@ -193,9 +193,3 @@ with open(filedirectory_to,'w') as f:
         for r, g in zip(bin,RDF[pair]):
             f.write(str(r).ljust(10) + str(round(g,5)).ljust(10) + '\n')
         f.write('\n')
-
-
-
-
-
-
