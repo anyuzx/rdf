@@ -4,7 +4,10 @@ import sys
 
 rdf = {}
 check = False
-with open('RDF.dat','r') as f:
+
+input_filenam = sys.argv[1]
+
+with open(input_filenam,'r') as f:
 	for i,line in enumerate(f):
 		if line.split(':')[0] == 'pair':
 			pair = line.split('\n')[0].split(':')[1]

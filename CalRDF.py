@@ -4,6 +4,7 @@ import rdf
 import numpy as np
 from time import strftime
 import os.path
+from sys import stdout
 
 ######################################################
 #                          V * h_ab(n)               #
@@ -43,7 +44,8 @@ inffilenam = 'README'
 natm_molecule = 3    # declare the number of atoms in one molecule
 ni = 0               # indicates the number of line where each configuration starts
 count = 1            # for loop in many configurations
-countMax = 1000      # the number of configurations considered
+countMin = 5000
+countMax = 10000     # the number of configurations considered
 nHist = 500          # number of bins
 rHistMax = 10.       # upper limit for considered interatomic distance. 
                      # This must be less than half of size of the simulation box(periodic condition) 
@@ -120,12 +122,17 @@ with open(filedirectory + trajfilenam,'r') as f:
                 sys.exit()
 
 boxvector = []
+count_out = 0
 atmnam_natm_list = {'OW':1,'HW':2,'OG':1,'HG':2}
 ################################################################
 # main part of the code. calculate the RDF distribution function
 with open(filedirectory + trajfilenam,'r') as f:
     for i, line in enumerate(f):
-        if count <= countMax:
+        if count <= countMax and count >= countMin:
+            if (count-countMin)/500 == count_out + 1:
+                count_out += 1
+                stdout.write('\r******  Number of configurations used:%d' % int(count_out*500))
+                stdout.flush()
             if line.split()[0] == "timestep":
                 boxvector = []
                 natomsc = int(line.split()[2])    # number of atoms in the CONFIGURATION
@@ -181,6 +188,9 @@ with open(filedirectory + trajfilenam,'r') as f:
                             position[temp_name1] = np.array(position[temp_name1])
                             position[temp_name2] = np.array(position[temp_name2])
                             RDF[temp_name1 + "-" + temp_name2] = RDF[temp_name1 + "-" + temp_name2] + rdf.rdftwo(position[temp_name1],position[temp_name2],dim_array,natmm1,natmm2,nHist,rHistMax,V)
+        elif count < countMin:
+            if line.split()[0] == 'timestep':
+                count += 1
         else:
             break
 
@@ -188,8 +198,16 @@ with open(filedirectory_to,'w') as f:
     f.write(contr_header)
     f.write(strftime("%Y-%m-%d %H:%H:%S")+'\n')
     for pair in iter(RDF):
-        RDF[pair] = RDF[pair]/countMax
+        RDF[pair] = RDF[pair]/(countMax - countMin)
         f.write('pair:' + pair + '\n')
         for r, g in zip(bin,RDF[pair]):
             f.write(str(r).ljust(10) + str(round(g,5)).ljust(10) + '\n')
         f.write('\n')
+
+print '******  '+contr_header+'\n******  Radial Distribution Function analysis'
+print '******  '+'Read the Trajectory File:'+filedirectory+trajfilenam
+print '******  '+'Write the result to the file:'+filedirectory_to
+print '\n******  Some analysis information:'
+print '******  '+'# of configurations'.ljust(25)+'# of atoms'.ljust(15)
+print '******  '+str(count-countMin).ljust(25)+str(natomsc).ljust(15)
+print '******  '+'The code is successfully completed'
